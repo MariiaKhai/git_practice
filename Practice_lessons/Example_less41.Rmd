@@ -1,0 +1,444 @@
+---
+title: "Advanced Data Manipulation. String functions in R"
+author: "Mariia Mazorchuk"
+date: "`r Sys.Date()`"
+logo: intego_group_llc_logo.jpg
+output: html_document
+  
+---
+
+## R String Manipulation Functions
+
+This presentation covers advanced string manipulation techniques in R, particularly using **basic syntax** in R, **stringr** package, and **regex**.
+
+---
+
+```{r setup}
+#, include=TRUE
+knitr::opts_chunk$set(echo = TRUE)
+library(stringr)
+
+```
+# Basic R Syntax
+## Basic function for working with string
+**substr**(x, start=n1, stop=n2)
+
+**paste**(…, sep="", collapse=NULL)
+
+**paste0**(…, collapse=NULL)
+
+**grep**(pattern, x, value=FALSE, ignore.case=FALSE, fixed=FALSE)
+
+**gsub**(pattern, replacement, x, ignore.case=FALSE, fixed=FALSE)
+
+**gregexpr**(pattern, text, ignore.case=FALSE, perl=FALSE, fixed=FALSE)
+
+**strsplit**(x, split)
+
+**sprintf**(fmt, …)
+
+**toupper/tolower**(x)
+
+**nchar**(x)
+
+
+## Substring
+
+substr(x, start = 2, stop = 5)
+
+substring(x, first = 2, last = 5)
+
+```{r}
+x <- "hello this is a string"
+substr(x, start = 7, stop = 13)
+```
+```{r}
+substring(x, first = 7, last = 13)
+```
+
+## Elements concatenation
+
+```{r}
+paste(1,'two',3,'four',5,'six',sep = "_")
+```
+```{r}
+paste(c(1,2,3,4,5,6,7,8),collapse = "_")
+```
+```{r}
+paste(c('a','b'),1:10,sep = '_',collapse = ' and ')
+```
+```{r}
+paste0('df',1:6)
+```
+
+## Format data
+```{r}
+x <- 123.456
+sprintf("%f", x) 
+```
+
+```{r}
+x<-1765
+sprintf("%06d", x)
+
+```
+```{r}
+x <- 13.456
+paste0(sprintf("%+.2f", x), "%")
+```
+
+
+# **stringr**
+## There are four main families of functions in **stringr**:
+
+1. Character manipulation: these functions allow you to manipulate individual characters within the strings in character vectors.
+
+2. Whitespace tools to add, remove, and manipulate whitespace.
+
+3. Locale sensitive operations whose operations will vary from locale to locale.
+
+4. Pattern matching functions. These recognise four engines of pattern description. The most common is regular expressions, but there are three other tools.
+
+
+## Main functions
+### Lenght of string
+```{r}
+str_length("abc")
+```
+### Substruct of string
+```{r}
+x <- c("abcdef", "ghifjk")
+
+```
+
+```{r}
+str_sub(x,3,3)  # The 3rd letter
+```
+
+```{r}
+str_sub(x, 2, -2)  # The 2nd to 2nd-to-last character
+```
+
+## Main functions
+### String concatenation
+```{r}
+str_c("abc", "def")
+```
+```{r}
+str_c("abc", "def", sep = ",")
+str_c(c("abc", "def"), sep = ",")
+```
+
+```{r}
+str_c("abc", "def", collapse = ", ")
+str_c(c("abc", "def"), collapse = ", ")
+```
+
+```{r}
+str_c(c("a", NA, "b"), "-d")
+paste0(c("a", NA, "b"), "-d")
+```
+## Main functions
+### String concatenation
+
+```{r}
+numbers <- 1:10
+
+# Concatenation with numbers
+var_names <- str_c("Var", numbers, sep = "_")
+
+var_names
+```
+
+## Main functions
+### Modify string
+```{r}
+x <- c("abcdef", "ghifjk")
+str_sub(x, 3, 3) <- "YYY"
+x
+```
+### Duplicate string
+```{r}
+str_dup(x, c(2, 3))
+```
+
+## Finding the n-th Word in a String
+### Example string
+```{r}
+example_string <- c("The quick brown fox jumps over the lazy dog", "hfjf jjk hgj")
+```
+### Extract the words
+```{r}
+fourth_word <- str_split(example_string, " ")
+fourth_word
+```
+### Replace the 4th word
+```{r}
+replaced_string <- str_replace(example_string, fourth_word[[1]][4], "swift") 
+replaced_string
+```
+
+## Whitespace
+Three functions add, remove, or modify whitespace:
+
+**str_pad()** pads a string to a fixed length by adding extra whitespace on the left, right, or both sides.
+
+**str_trim()** removes leading and trailing whitespace, the opposite of str_pad().
+
+**str_wrap()** modify existing whitespace in order to wrap a paragraph of text, such that the length of each line is as similar as possible.
+
+## **str_pad()**
+
+```{r}
+x <- c("abc", "defghi")
+
+str_pad(x, 10)   # default pads on left
+```
+
+```{r}
+str_pad(x, 10, "both")  # add pads on left and on right
+```
+
+str_pad() will never make a string shorter:
+```{r}
+str_pad(x, 4)
+```
+
+
+## **str_trim()**
+
+```{r}
+x <- c("  a   ", "b   ",  "   c")
+
+str_trim(x)
+```
+```{r}
+str_trim(x, "left")
+```
+
+## str_pad() + str_trunc
+So if you want to ensure that all strings are the same length (often useful for print methods), combine str_pad() and str_trunc():
+```{r}
+x <- c("Short", "This is a long string")
+x %>% 
+  str_trunc(10) %>% 
+  str_pad(10, "right")
+```
+
+## **str_wrap**
+```{r}
+jabberwocky <- str_c(
+  "`Twas brillig, and the slithy toves ",
+  "did gyre and gimble in the wabe: ",
+  "All mimsy were the borogoves, ",
+  "and the mome raths outgrabe. "
+)
+cat(str_wrap(jabberwocky, width = 40))
+```
+## **str_glue()**
+
+```{r}
+name <- "Mike"
+age <- 30
+str_glue("My name is {name}. I am {age}.")
+```
+```{r}
+names <- c("Mike", "Mary")
+ages <- c(30, 25)
+str_glue("My name is {names}. I am {ages}.")
+```
+```{r}
+df <- data.frame(
+  name = c("Mike", "Mary"),
+  age = c(30, 25)
+)
+df %>% str_glue_data("My name is {names}. I am {ages}.")
+```
+
+## Locale sensitive
+A handful of stringr functions are locale-sensitive: they will perform differently in different regions of the world. These functions are case transformation functions:
+```{r}
+x <- "I like horses."
+str_to_upper(x)
+```
+```{r}
+str_to_title(x)
+```
+```{r}
+str_to_lower(x)
+```
+
+## String ordering and sorting
+
+```{r}
+x <- c("y", "i", "k")
+str_order(x)
+```
+
+```{r}
+str_sort(x)
+```
+
+## Pattern matching
+
+The vast majority of **stringr** functions work with patterns. These are parameterised by the task they perform and the types of patterns they match.
+
+There are four main engines that **stringr** can use to describe patterns:
+
+1. Regular expressions, the default, as shown above, and described in vignette("regular-expressions").
+
+2. Fixed bytewise matching, with fixed().
+
+3. Locale-sensitive character matching, with coll()
+
+4. Text boundary analysis with boundary().
+
+Each pattern matching function has the same first two arguments, a character vector of strings to process and a single pattern to match. **stringr** provides pattern matching functions to **detect**, **locate**, **extract**, **match**, **replace**, and **split** strings.
+
+## *Tasks*
+
+```{r}
+strings <- c(
+  "apple", 
+  "067-7749456", 
+  "+38(067)-77-49-756", 
+  "+38(067)-774-97-56", 
+  "8-067-7749756",
+  "Work: +38(067)-774-97-56; Home: 8-067-7749756"
+)
+
+phone <- "\\+?3?8?\\(?0[67]\\d\\)?[- .]?\\d{2,3}[- .]?\\d{2}[- .]?\\d{2,3}"
+
+```
+## Functions for patterns matching 
+```{r}
+str_detect(strings, pattern=phone)
+```
+
+```{r}
+str_subset(strings, phone)
+```
+
+
+# **Regular expression - regex**
+## Regular expression
+
+Regular expressions are powerful tools used to search and manipulate text patterns. They provide a way to find specific sequences of characters within larger bodies of text. Regular expressions are useful for tasks like extracting specific words, finding patterns, or replacing text in bulk. 
+![[Link 1](https://stringr.tidyverse.org/articles/regular-expressions.html)]
+![[Link 2](https://stat.ethz.ch/R-manual/R-devel/library/base/html/regex.html)]
+![[Link 3](https://ladal.edu.au/regex.html)]
+
+
+```{r}
+str_detect("\nX\n", ".X.")
+```
+```{r}
+str_detect("\nX\n", regex(".X.", dotall = TRUE))
+```
+## **str_detect**
+```{r}
+FACTOR_VAR <- factor(c("AA", "BB", "XX", "CC", "DD", "AA", "BB"))
+character_VAR <- as.character(FACTOR_VAR)
+matches <- str_detect(character_VAR, 'AA|BB|CC')
+matches
+matched_values <- character_VAR[matches]
+matched_values
+```
+
+
+## Regular expression
+![](https://paulvanderlaken.files.wordpress.com/2017/10/regular-expression.gif)
+
+## Example
+```{r}
+strings <- c(
+  "apple@example.com", 
+  "john.doe@company.org", 
+  "jane-doe@subdomain.company.net", 
+  "invalid-email@",
+  "no-at-symbol.com",
+  "too@many@ats.com"
+)
+
+# Regular expression
+e_mail <- "[\\w._%+-]+@[\\w.-]+\\.[a-zA-Z]{2,4}"
+```
+
+## Functions for patterns matching 
+```{r}
+# str_detect() for checking valid e_mail
+valid_emails <- str_detect(strings, e_mail)
+valid_emails
+```
+
+```{r}
+# str_subset() for output of valid e-mail
+valid_emails_subset <- str_subset(strings, e_mail)
+valid_emails_subset
+```
+## Functions for patterns matching 
+```{r}
+# How many e-mail in each string?
+str_count(strings, e_mail)
+```
+
+```{r}
+# Where in the string is the e-mail located?
+(loc <- str_locate(strings, e_mail))
+```
+## Functions for patterns matching 
+```{r}
+# Pull out the components of the match
+str_match(strings, e_mail)
+```
+
+```{r}
+str_replace(strings, e_mail, "[email protected]")
+```
+## Other engines
+**fixed()**  only matches the exact sequence of bytes specified by x. This is a very limited “pattern”, but the restriction can make matching much faster.
+```{r}
+#names <- c("José", "Josè", "Jose", "Hosé")
+names <- c("Jos\u00E9", "Jos\u00E8", "Jose", "Hos\u00E9")
+corrected_names <- str_replace_all(names, fixed("Jos\u00E9"), "Jose")
+corrected_names
+```
+**coll()** looks for a match to x using human-language collation rules, and is particularly important if you want to do case insensitive matching.
+```{r}
+#words <- c("resume", "résumé", "resumé", "Resume")
+words <- c("resume", "r\u00E9sum\u00E9", "resum\u00E9", "Resume")
+str_subset(words, coll("resume", ignore_case = TRUE))
+```
+
+## Other engines
+**boundary()** matches boundaries between characters, lines, sentences or words.
+```{r}
+x <- "stringr is a very good package for working with text"
+```
+
+```{r}
+# Split by words
+str_split(x, boundary("word"))
+```
+
+```{r}
+# Count of words
+str_count(x, boundary("word"))
+# Count of sentences
+str_count(x, boundary("sentence"))
+```
+
+## Other engines
+```{r}
+#Extract words from sentence
+str_extract_all(x, boundary("word"))
+```
+
+```{r}
+#Extract characters from sentence
+str_extract_all(x, boundary("character"))
+```
+
+
+
+

@@ -1,0 +1,316 @@
+---
+title: "Mastering Date & Time Manipulation in R"
+author: "Mariia Mazorchuk"
+date: "`r Sys.Date()`"
+logo: intego_group_llc_logo.jpg
+output: html_document
+  
+---
+
+## R Date & Time Manipulation Functions
+
+This presentation covers advanced the essential functions and packages in R for effective date and time manipulation.We'll explore the capabilities of the **lubridate** package and base R functions, classes **Date**, **POSIXct** та **POSIXlt**
+
+---
+
+```{r setup}
+#, include=TRUE
+knitr::opts_chunk$set(echo = TRUE)
+library(lubridate)
+
+```
+## Dates and times classes
+There are three basic date and time classes: Date, POSIXct and POSIXlt. Class **Date** handles dates without times. **POSIXct** (calendar time) and **POSIXlt** (local time) represent dates and times.
+
+```{r}
+date_string <- "2024-01-14 14:17:30"
+as.Date(date_string)
+```
+```{r}
+as.POSIXct(date_string)
+```
+```{r}
+as.POSIXlt(date_string)
+```
+```{r}
+as.numeric(as.POSIXlt("2024-01-14 14:17:30 EET"))
+```
+## What is the unix time stamp?
+
+The unix time stamp is a way to track time as a running total of seconds. This count starts at the Unix Epoch on January 1st, 1970 at UTC. Therefore, the unix time stamp is merely the number of seconds between a particular date and the Unix Epoch. It should also be pointed out that this point in time technically does not change no matter where you are located on the globe. This is very useful to computer systems for tracking and sorting dated information in dynamic and distributed applications both online and client side.
+
+```{r}
+date <- c(1304362260, 1216256400, 1311344765, 1331309010, 1297437420, 1417795235)
+date <- as.POSIXct(date, origin = "1970-01-01")
+date
+```
+![[Link 1](https://www.iso.org/iso-8601-date-and-time-format.html)]
+![[Link 2](https://www.unixtimestamp.com/)]
+
+
+## **Date** vs **POSIXct**  vs **POSIXlt**
+
+**Date** and **POSIXct** are internally stored as number of days and seconds from January 1, 1970. 
+**POSIXlt** stores dates and times as a list of components: second, minute, hour, day, month, year, time zone etc.
+```{r}
+now <- "2024-01-14 14:17:30 EET"
+
+datetime1 <- as.POSIXct(now)
+unclass(datetime1)
+```
+```{r}
+datetime1 <- as.POSIXlt(now)
+unclass(datetime1) #$mon
+
+```
+# Basic R Syntax
+## Basic function for working with Date & Time
+**Sys.Date()** and **Sys.time()**:
+
+Sys.Date() returns the current date.
+Sys.time() returns the current date and time.
+
+```{r}
+Sys.Date()
+Sys.time()
+```
+**as.Date()**:
+
+Converts various types of date/time data to Date objects.
+Example: as.Date("2023-12-01") converts a character string to a Date object.
+```{r}
+as.Date("2024-01-07")
+```
+## Using formats for Date and POSIXct/POSIXlt objects
+
+**format()** formats the current date in a specific way (e.g., "січень 07, 2023"):
+```{r}
+format(Sys.Date(), format="%B %d, %Y")
+```
+**strptime()**  converts character vectors to POSIXlt date-time format:
+```{r}
+strptime("2023-12-01 15:00", "%Y-%m-%d %H:%M")
+```
+## Not standard format
+
+If the input format is not standard, we need to set the format argument to map the displayed format.
+
+*%b* abbreviated month name
+*%m* month as decimal number (01–12)
+*%c* date and time
+*%d* day of the month as decimal number (01–31)
+*%e* day of the month as decimal number (1–31)
+*%H* hours as decimal number (00–23); strings such as 24:00:00 are accepted for input
+*%I* hours as decimal number (01–12)
+*%M* minute as decimal number (00–59)
+*%S* second as integer (00–61)
+*%OS* seconds including fractional seconds
+*%Y* year with century
+*%y* year without century (00–99)
+…
+The full list of allowed formats can be found by **?strptime()**.
+
+## Examples
+```{r}
+as.Date("14січень2019 14:17:30", format="%d%b%Y")
+```
+
+```{r}
+Sys.timezone()
+#Sys.setlocale("LC_TIME", "uk_UA")
+as.POSIXct("14січень2019 14:17:30", format = "%d%b%Y %H:%M:%S")
+```
+
+```{r}
+Sys.timezone()
+#Sys.setlocale("LC_TIME", "uk_US")
+as.POSIXlt("14january2019 14:17:30", format = "%d%b%Y %H:%M:%S")
+```
+## Time zone 
+```{r}
+#Return your time zone
+Sys.timezone()
+```
+```{r}
+# Setting time zones
+Sys.setenv(TZ = "Europe/Kiev")
+#OlsonNames()
+```
+
+```{r}
+# Setting English locale for Time and Date
+Sys.setlocale("LC_TIME", "en_US.UTF-8")
+# or "English" 
+Sys.setlocale("LC_TIME", "uk_US")
+```
+```{r}
+# or "Ukraine" 
+Sys.setlocale("LC_TIME", "uk_UA")
+```
+
+## Time zone 
+```{r}
+# Creating time in EET time zone
+specific_time_eet <- as.POSIXct("2023-03-01 12:00", tz = "EET")
+format(specific_time_eet, tz = "EET", usetz = TRUE)
+
+# Creating time in UTC time zone
+specific_time_utc <- as.POSIXct("2023-03-01 12:00", tz = "UTC")
+format(specific_time_utc, tz = "UTC", usetz = TRUE)
+```
+```{r}
+format(specific_time_eet, tz = "UTC", usetz = TRUE)
+format(specific_time_utc, tz = "EET", usetz = TRUE)
+```
+
+## with_tz & force_tz
+
+*with_tz* returns a date-time as it would appear in a different time zone. The actual moment of time measured does not change, just the time zone it is measured in.
+
+*force_tz* returns the date-time that has the same clock time as input time, but in the new time zone.
+
+```{r}
+x <- ymd_hms("2009-08-07 00:00:01", tz = "America/New_York")
+
+with_tz(x, "GMT")
+force_tz(x, "GMT")
+with_tz(x, "America/Costa_Rica")
+force_tz(x, "America/Costa_Rica")
+
+```
+
+
+## weekdays(), months(), quarters()
+**weekdays()**, **months()**, and **quarters()** are base R functions to extract parts of a POSIXt or Date object.
+```{r}
+now <- Sys.time()
+weekdays(now)
+months(now)
+quarters(now)
+```
+
+## Calculates time differences
+**difftime()** :
+
+```{r}
+difftime(Sys.time(), as.POSIXct("2024-01-01"))
+difftime(Sys.time(), as.POSIXct("2024-01-01"),units='hours')
+difftime(Sys.time(), as.POSIXct("2024-01-01"),units='weeks')
+```
+```{r}
+b1 = ISOdate(2024,1,1)
+b2 = ISOdate(2024,1,14)
+b1
+b2
+b2 - b1
+```
+## Creating dates and times
+creating sequences
+We can use seq() to create date-time sequences.
+```{r}
+seq(from = as.Date("2023/01/14"), to = as.Date("2024/01/14"), by = "month")
+```
+```{r}
+seq(from = as.Date("2023/06/14"), to = as.Date("2024/01/14"), by = "week")
+```
+## **lubridate** functions
+lubridate provides more intuitive ways to convert characters to dates and times.
+
+ymd(), ydm(), mdy(), myd(), dmy(), dym(), yq() parses dates with year, month, and day components.
+
+```{r}
+Sys.setlocale("LC_TIME", "en_US.UTF-8")
+ymd("2024/01/14")
+```
+
+```{r}
+dmy("14jan2024")
+```
+```{r}
+dmy("14jan2024")
+```
+## **lubridate** functions
+hm(), ms(), hms() parses periods with hour, minute, and second components.
+```{r}
+hms("14:17:30")
+```
+```{r}
+hm("14:17")
+```
+```{r}
+ms("17:30")
+```
+## **lubridate** functions
+ymd_hms(), ymd_hm(), ymd_h(), dmy_hms(), dmy_hm(), dmy_h(), mdy_hms(), mdy_hm(), mdy_h(), ydm_hms(), ydm_hm(), ydm_h() parses date-times with year, month, and day, hour, minute, and second components.
+```{r}
+ymd_hms("2024/01/14 14:17:30")
+```
+```{r}
+dmy_hms("14jan2024 14:17:30")
+```
+```{r}
+dmy_hms("14jan2024 14:17:30")
+```
+
+## **lubridate** functions
+In package **lubridate**, a time span can be measured in three ways as a duration, a period or an interval.
+
+**Durations** record the exact number of seconds. They do not always align with human measurements like hours and years, because the length of larger time units can be affected by conventions such as leap years and Daylight Savings Time. For example, when a leap second occurs, one minute is longer than 60 seconds.
+**Periods** record the change in the clock time between two date-times. They are measured in human units: years, months, days, hours, minutes, and seconds.
+**Intervals** are point-to-point differences measured with seconds. They are calculated on the UTC timeline that do not use daylight savings.
+Time zones, and coonventions such as daylight savings time and leap years / seconds are tricky things to watch out for when working with dates and times.
+
+## **lubridate** functions
+Interval
+```{r}
+span <- interval(ymd("2023-01-01"), ymd("2024-01-01"))
+span
+```
+Period
+Like **difftime** objects, **period** objects can be converted to numeric objects.
+```{r}
+period<-as.period(span, unit = "days")
+period
+```
+```{r}
+as.numeric(period, unit = "days")
+```
+
+Duration represent exact numbers between two dates in seconds taking to account leap years.
+```{r}
+as.duration(1234588)
+```
+## Rounding dates and times
+Functions **round_date()**, **floor_date()** and **ceiling_date()** from **lubridate()** round the date-time objects to a nearby unit of time.
+
+**round_date()** takes a date-time object and rounds it to the nearest value of the specified time unit. It rounds up the object when the date-time value is exactly halfway between two consecutive units.
+```{r}
+datetime <- ymd_hms("2024/01/14 14:17:30.59")
+round_date(datetime)
+```
+**floor_date()** takes a date-time object and rounds it down to the nearest boundary of the specified time unit.
+```{r}
+floor_date(datetime)
+```
+**ceiling_date()** takes a date-time object and rounds it up to the nearest boundary of the specified time unit.
+```{r}
+ceiling_date(datetime)
+```
+## Rounding dates and times by units. 
+Valid units are second, minute, hour, day, week, month, bimonth, quarter, season, halfyear and year.
+```{r}
+round_date(datetime, "sec")
+```
+```{r}
+round_date(datetime, "min")
+```
+```{r}
+round_date(datetime, "15 mins")
+```
+```{r}
+round_date(datetime, "hours")
+```
+```{r}
+round_date(datetime, "day")
+```
+
